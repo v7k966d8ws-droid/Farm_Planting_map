@@ -1,142 +1,60 @@
 <!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Jacks Planting Map — Row Select</title>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Jacks Planting Map Prototype</title>
 <style>
-:root{--bg:#eef3ef;--ink:#173226;--line:#c7d0ca;--track:#dccba8;--green:#287a50}
-*{box-sizing:border-box} body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
-header{background:white;padding:16px 20px;border-bottom:1px solid #d7ddd9} h1{font-size:24px;margin:0 0 5px} .sub{color:#68756e}
-.controls{background:#fff;padding:12px 15px;border-bottom:1px solid #d7ddd9;display:flex;gap:10px;align-items:center;flex-wrap:wrap;position:sticky;top:0;z-index:10}
-input,button{font:inherit;border:1px solid #bdc8c1;border-radius:10px;padding:11px 13px;background:white} input{font-size:18px}
-button{font-weight:700;color:#1677ff} button.on,.save{background:#287a50;color:white;border-color:#287a50}
-.mode{background:white;padding:10px 15px;border-bottom:1px solid #d7ddd9;display:flex;gap:9px;align-items:center;flex-wrap:wrap}
-.note{padding:10px 15px;color:#637168;font-size:14px}
-.legend{display:flex;gap:8px;flex-wrap:wrap;padding:0 15px 10px}.chip{background:#fff;border:1px solid #d3dad5;border-radius:9px;padding:6px 9px;display:flex;gap:6px;align-items:center}.sw{width:15px;height:15px;border-radius:4px}
-.scroller{overflow-x:auto;padding:0 15px 18px}.farm{display:flex;gap:14px;min-width:max-content}
-.block{background:white;border:1px solid #cdd6d0;border-radius:12px;padding:8px}.block h3{text-align:center;margin:0 0 7px;font-size:16px}
-.bays{display:flex;gap:5px}.bay{display:grid;grid-template-columns:27px 7px 27px;grid-template-rows:repeat(6,45px);gap:3px;cursor:pointer}
-.half{border:1px solid #b8c3bc;border-radius:5px;background:#f7faf8;position:relative;overflow:hidden}
-.track{grid-row:1/7;grid-column:2;background:var(--track);border-radius:3px}
-.cell{grid-column:1/4;border:1px solid transparent;pointer-events:none}
-.seg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;font-size:9px;font-weight:800;line-height:1.05;color:#173226;padding:2px;overflow:hidden}
-.bay.pending .half{outline:3px solid #2683ff;outline-offset:-3px}
-.status{margin:0 15px 20px;background:#fff;border:1px solid #cdd6d0;border-radius:12px;padding:12px;max-width:950px}
-.savedrow{display:flex;gap:8px;align-items:center;margin:5px 0}.dot{width:13px;height:13px;border-radius:3px;flex:none}
-.small{font-size:13px;color:#68756e}.danger{color:#c23434}.right{margin-left:auto}
-@media(max-width:700px){h1{font-size:20px}.bay{grid-template-columns:24px 6px 24px;grid-template-rows:repeat(6,42px)}}
-</style>
-</head>
-<body>
-<header><h1>Jacks Planting Map — Row Select</h1><div class="sub">One bay = 6 rows + tractor track + 6 rows. Three bays = normal 36-row planting width.</div></header>
-<div class="controls">
-<input id="variety" placeholder="Variety" value="Gina">
-<input id="date" type="date">
-<button id="clear">Clear selection</button><button class="save" id="save">Save planting</button>
-</div>
-<div class="mode">
-<b>Rows:</b>
-<button data-r="6">6</button><button data-r="12">12</button><button data-r="18">18</button>
-<button data-r="24">24</button><button data-r="30">30</button><button data-r="36" class="on">36</button>
-<b style="margin-left:8px">Length:</b>
-<button data-l="1">1/6</button><button data-l="2">1/3</button><button data-l="3" class="on">½</button><button data-l="4">2/3</button><button data-l="5">5/6</button><button data-l="6">Full</button>
-<b style="margin-left:8px">From:</b><button data-d="start" class="on">Top ↓</button><button data-d="end">Bottom ↑</button>
-</div>
-<div class="note">Choose the number of rows (6–36) and the planting length, then tap a tractor track at the starting position. Each side of a track represents 6 rows. You can still tap individual map sections afterwards to fine-adjust the selection. Saved plantings are colour-coded by variety.</div>
-<div class="legend" id="legend"></div>
-<div class="scroller"><div class="farm" id="farm"></div></div>
-<div class="status"><b id="sel">No area selected</b><div id="saved"></div></div>
+:root{--green:#1f6b45;--pale:#f4f7f3;--line:#aeb8b1;--track:#d8c8a7;--sel:#9fd3b4;--ink:#183126;--blue:#1677ff}*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:#eef2ef}header{background:#fff;padding:14px 16px;border-bottom:1px solid #d9dfdb}h1{font-size:20px;margin:0 0 4px}header p{margin:0;font-size:13px;color:#5e6b64}.toolbar,.batchbar{display:flex;gap:8px;flex-wrap:wrap;padding:10px 12px;background:#fff;border-bottom:1px solid #d9dfdb;align-items:center}.toolbar input,.toolbar button,.batchbar button{font:inherit;border:1px solid #bbc5be;border-radius:9px;padding:9px 10px;background:#fff}.toolbar input{min-width:135px}.toolbar button,.batchbar button{font-weight:650}.toolbar .save{background:var(--green);color:#fff;border-color:var(--green)}.batchbar .active{background:var(--green);color:#fff;border-color:var(--green)}.batchbar .label{font-size:12px;font-weight:700;margin-right:2px}.divider{width:1px;height:30px;background:#d9dfdb;margin:0 4px}main{padding:12px;overflow:auto}.hint{font-size:12px;margin:0 0 10px;color:#5f6c64}.farm{display:flex;gap:12px;align-items:flex-start;min-width:1050px}.block{background:#fff;border:1px solid #ccd5cf;border-radius:12px;padding:8px;box-shadow:0 1px 2px #0000000b}.block h2{font-size:13px;text-align:center;margin:0 0 7px}.bays{display:flex;gap:4px}.bay{display:grid;grid-template-columns:1fr 7px 1fr;gap:2px}.six{display:grid;grid-template-rows:repeat(6,28px);gap:2px}.cell{width:22px;background:var(--pale);border:1px solid var(--line);border-radius:3px;position:relative;touch-action:manipulation}.cell.selected{background:var(--sel);border-color:#4f946c}.cell[data-variety]:after{content:"";position:absolute;inset:4px;border-radius:50%;background:#356d50}.track{background:var(--track);border-radius:3px}.baygap{width:5px;background:#fff}.legend{margin-top:14px;background:#fff;border:1px solid #ccd5cf;border-radius:10px;padding:10px;font-size:12px;max-width:750px}.selection{font-weight:700;margin-bottom:5px}.small{font-size:11px;color:#66736b}.modehint{font-size:12px;font-weight:650;color:#365e49;padding:0 12px 10px;background:#fff}
+@media(max-width:700px){.farm{min-width:900px}.cell{width:19px}.six{grid-template-rows:repeat(6,25px)}}
+</style></head><body>
+<header><h1>Jacks Planting Map — Stable Batch + Fine Adjust</h1><p>One bay = 6 rows + tractor track + 6 rows. Three bays = your normal 36-row planting width.</p></header>
+<div class="toolbar"><input id="variety" placeholder="Variety"><input id="date" type="date"><button id="clear">Clear selection</button><button id="fine">Fine Adjust: OFF</button><button id="save" class="save">Save planting</button></div>
+<div class="batchbar"><span class="label">Width:</span><button class="width" data-bays="1">12 rows</button><button class="width active" data-bays="3">36 rows</button><span class="divider"></span><span class="label">Length:</span><button class="len" data-len="1">1/6</button><button class="len" data-len="2">2/6</button><button class="len" data-len="3">½</button><button class="len" data-len="4">4/6</button><button class="len" data-len="5">5/6</button><button class="len active" data-len="6">Full</button></div>
+<div class="modehint" id="modehint">36 rows × full length — tap the first bay of the planting run.</div>
+<main><p class="hint"><b>Normal mode:</b> tap any section in the first bay to select the whole 12/36-row batch. <b>Fine Adjust:</b> switch it ON, then tap individual sections to add/remove them without changing the batch logic.</p><div id="varietyLegend" class="legend" style="margin-top:0;margin-bottom:10px"></div><div class="farm" id="farm"></div><div class="legend"><div class="selection" id="selection">0 sections selected</div><div id="saved"></div><div class="small">Saved plantings stay on this device/browser for the prototype.</div></div></main>
 <script>
-const colours=["#b8dfc3","#f4d3a5","#bcd7f2","#e8b8cf","#d5c5ef","#f0e59e","#b9e2df","#efc0b4","#cbdca8","#d8c3ad"];
-const bayCounts=[14,6,6,6,4,5.5,6,6,6,2.5];
-let rows=36,len=3,dir="start",pending=[],plantings=JSON.parse(localStorage.getItem("jacksPlantingsV5")||"[]");
-const today=new Date(); document.querySelector("#date").value=today.toISOString().slice(0,10);
-function varietyColour(v){
- let names=[...new Set(plantings.map(p=>p.variety))]; let i=names.indexOf(v);
- if(i<0)i=names.length; return colours[i%colours.length];
+const blocks=[['Jacks 1',14],['Jacks 2',6],['Jacks 3',6],['Jacks 4',6],['Jacks 5',4],['Jacks 6',5.5],['Jacks 7',6],['Jacks 8',6],['Jacks 9',6],['Jacks 5A',2.5]];
+const farm=document.getElementById('farm');let batchBays=3,batchLen=6,fineMode=false;
+function key(block,bay,side,section){return `${block}|${bay}|${side}|${section}`}
+function makeCell(block,bay,side,section){let c=document.createElement('div');c.className='cell';c.dataset.key=key(block,bay,side,section);c.dataset.block=block;c.dataset.bay=bay;c.dataset.side=side;c.dataset.section=section;c.addEventListener('click',e=>{e.preventDefault(); if(fineMode) fineToggle(c); else batchSelect(c)});return c}
+for(const [name,bays] of blocks){let b=document.createElement('section');b.className='block';b.innerHTML=`<h2>${name}</h2>`;let baysEl=document.createElement('div');baysEl.className='bays';let count=Math.ceil(bays);for(let n=1;n<=count;n++){let bay=document.createElement('div');bay.className='bay';for(const side of ['A','B']){let six=document.createElement('div');six.className='six';let exists=!(n===count&&bays%1&&side==='B');for(let s=1;s<=6;s++){if(exists)six.appendChild(makeCell(name,n,side,s));else{let blank=document.createElement('div');blank.style.width='22px';six.appendChild(blank)}}bay.appendChild(six);if(side==='A'){let tr=document.createElement('div');tr.className='track';bay.appendChild(tr)}}baysEl.appendChild(bay);if(n<count){let gap=document.createElement('div');gap.className='baygap';baysEl.appendChild(gap)}}b.appendChild(baysEl);farm.appendChild(b)}
+function fineToggle(c){c.classList.toggle('selected');updateCount()}
+function batchSelect(c){let block=c.dataset.block,start=+c.dataset.bay;let candidates=[...document.querySelectorAll(`.cell[data-block="${CSS.escape(block)}"]`)];let chosen=candidates.filter(x=>{let b=+x.dataset.bay,s=+x.dataset.section;return b>=start&&b<start+batchBays&&s<=batchLen});let allOn=chosen.length&&chosen.every(x=>x.classList.contains('selected'));chosen.forEach(x=>x.classList.toggle('selected',!allOn));updateCount()}
+function updateCount(){document.getElementById('selection').textContent=`${document.querySelectorAll('.cell.selected').length} sections selected`}
+document.querySelectorAll('.width').forEach(btn=>btn.onclick=()=>{batchBays=+btn.dataset.bays;document.querySelectorAll('.width').forEach(b=>b.classList.toggle('active',b===btn));updateHint()});document.querySelectorAll('.len').forEach(btn=>btn.onclick=()=>{batchLen=+btn.dataset.len;document.querySelectorAll('.len').forEach(b=>b.classList.toggle('active',b===btn));updateHint()});
+function updateHint(){let rows=batchBays*12;let l=batchLen===6?'full length':batchLen===3?'half length':`${batchLen}/6 length`;document.getElementById('modehint').textContent=`${rows} rows × ${l} — tap the first bay of the planting run.`}
+document.getElementById('fine').onclick=()=>{fineMode=!fineMode;let b=document.getElementById('fine');b.textContent=`Fine Adjust: ${fineMode?'ON':'OFF'}`;b.classList.toggle('save',fineMode)};
+document.getElementById('clear').onclick=()=>{document.querySelectorAll('.cell.selected').forEach(c=>c.classList.remove('selected'));updateCount()};
+const varietyColours=['#b8dfc3','#f1d19b','#b9d6f2','#e6b8cf','#d3c2ee','#eee292','#b6dfdc','#efbdb1','#c9dba5','#d8c0aa'];
+function colourForVariety(name,data){
+ const names=[...new Set(data.map(p=>p.variety).filter(Boolean))];
+ let i=names.indexOf(name); if(i<0)i=names.length;
+ return varietyColours[i%varietyColours.length];
 }
-function build(){
- const farm=document.querySelector("#farm"); farm.innerHTML="";
- bayCounts.forEach((n,bi)=>{
-   const b=document.createElement("div");b.className="block";b.innerHTML=`<h3>Jacks ${bi+1}</h3><div class="bays"></div>`;
-   const bays=b.querySelector(".bays"); const count=Math.ceil(n);
-   for(let j=0;j<count;j++){
-    const bay=document.createElement("div");bay.className="bay";bay.dataset.block=bi;bay.dataset.bay=j;
-    for(let s=0;s<6;s++){
-      let l=document.createElement("div");l.className="half";l.style.gridColumn="1";l.style.gridRow=(s+1);l.dataset.side="L";l.dataset.seg=s;
-      l.onclick=(e)=>{e.stopPropagation();toggleSection(bi,j,s,"L");}; bay.appendChild(l);
-      let r=document.createElement("div");r.className="half";r.style.gridColumn="3";r.style.gridRow=(s+1);r.dataset.side="R";r.dataset.seg=s;
-      r.onclick=(e)=>{e.stopPropagation();toggleSection(bi,j,s,"R");}; bay.appendChild(r);
-    }
-    let tr=document.createElement("div");tr.className="track";bay.appendChild(tr);
-    bay.onclick=()=>selectBatch(bi,j);bays.appendChild(bay);
-   } farm.appendChild(b);
- }); render();
-}
+function shortDate(d){if(!d)return'';let [y,m,day]=d.split('-');return `${day}/${m}/${y.slice(2)}`}
 
-function toggleSection(block,bay,seg,side){
- const i=pending.findIndex(q=>q.block===block&&q.bay===bay&&q.seg===seg&&q.side===side);
- if(i>=0) pending.splice(i,1);
- else pending.push({block,bay,seg,side});
- render();
-}
-
-function selectBatch(block,startBay){
- pending=[]; const max=Math.ceil(bayCounts[block]);
- const stripsNeeded=Math.max(1,Math.round(rows/6));
- // Each bay has two 6-row strips: left and right of its tractor track.
- // Tapping a tractor track starts at the LEFT 6-row strip of that bay.
- let stripIndex=startBay*2;
- let segs=dir==="start"?[...Array(len).keys()]:[...Array(len).keys()].map(x=>5-x);
- for(let k=0;k<stripsNeeded;k++){
-   let idx=stripIndex+k, bay=Math.floor(idx/2), side=(idx%2===0?"L":"R");
-   if(bay>=max) break;
-   segs.forEach(seg=>pending.push({block,bay,seg,side}));
- }
- render();
-}
-function render(){
- document.querySelectorAll(".half").forEach(x=>{x.style.background="";x.innerHTML=""});
- plantings.forEach(p=>{
-   const c=varietyColour(p.variety);
-   p.cells.forEach((q,idx)=>{
-    const sides=q.side?[q.side]:["L","R"];
-    sides.forEach(side=>{
-      const el=document.querySelector(`.bay[data-block="${q.block}"][data-bay="${q.bay}"] .half[data-side="${side}"][data-seg="${q.seg}"]`);
-      if(el){el.style.background=c;if(idx===Math.floor(p.cells.length/2))el.innerHTML=`<span class="seg">${p.variety}<br>${fmt(p.date)}</span>`;}
-    });
-   });
- });
- document.querySelectorAll(".half").forEach(x=>x.style.outline="");
- pending.forEach(q=>{
-   const sides=q.side?[q.side]:["L","R"];
-   sides.forEach(side=>{
-     const el=document.querySelector(`.bay[data-block="${q.block}"][data-bay="${q.bay}"] .half[data-side="${side}"][data-seg="${q.seg}"]`);
-     if(el){el.style.outline="3px solid #2683ff";el.style.outlineOffset="-3px";}
-   });
- });
- document.querySelector("#sel").textContent=pending.length?`${rows} rows × ${len}/6 length selected`:"No area selected";
- renderLegend();renderSaved();
-}
-function fmt(d){if(!d)return"";let [y,m,day]=d.split("-");return `${day}/${m}/${y.slice(2)}`}
-function renderLegend(){
- let el=document.querySelector("#legend");el.innerHTML="";
- [...new Set(plantings.map(p=>p.variety))].forEach(v=>{let c=varietyColour(v);el.innerHTML+=`<div class="chip"><span class="sw" style="background:${c}"></span><b>${v}</b></div>`})
-}
 function renderSaved(){
- let el=document.querySelector("#saved");el.innerHTML="";
- plantings.slice().reverse().forEach((p,ri)=>{let i=plantings.length-1-ri;let row=document.createElement("div");row.className="savedrow";row.innerHTML=`<span class="dot" style="background:${varietyColour(p.variety)}"></span><b>${p.variety}</b><span>${fmt(p.date)}</span><span class="small">${p.cells.length} map sections</span><button class="danger right" data-del="${i}">Delete</button>`;el.appendChild(row)});
- document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{plantings.splice(+b.dataset.del,1);saveLocal();render()});
+ let data=JSON.parse(localStorage.getItem('jacksPlantingsStable')||'[]');
+ document.querySelectorAll('.cell').forEach(c=>{c.removeAttribute('data-variety');c.style.background='';c.innerHTML=''});
+ for(const p of data){
+   const col=p.color||colourForVariety(p.variety,data);
+   p.cells.forEach((k,i)=>{
+     let c=document.querySelector(`.cell[data-key="${CSS.escape(k)}"]`);
+     if(c){c.dataset.variety=p.variety;c.style.background=col;
+       if(i===Math.floor(p.cells.length/2)) c.innerHTML=`<span style="position:absolute;inset:1px;font-size:7px;font-weight:800;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1">${p.variety}<br>${shortDate(p.date)}</span>`;
+     }
+   });
+ }
+ const names=[...new Set(data.map(p=>p.variety).filter(Boolean))];
+ document.getElementById('varietyLegend').innerHTML=names.length?'<b>Varieties:</b> '+names.map(v=>`<span style="display:inline-flex;align-items:center;gap:5px;margin-left:10px"><i style="width:14px;height:14px;border-radius:3px;background:${colourForVariety(v,data)};display:inline-block"></i>${v}</span>`).join(''):'<span class="small">No saved varieties yet.</span>';
+ document.getElementById('saved').innerHTML=data.slice(-5).reverse().map(p=>`<div><b>${p.variety||'Unnamed'}</b> — ${shortDate(p.date)||'no date'} — ${p.cells.length} sections</div>`).join('');
 }
-function saveLocal(){localStorage.setItem("jacksPlantingsV5",JSON.stringify(plantings))}
-document.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{
- rows=+b.dataset.r;
- document.querySelectorAll("[data-r]").forEach(x=>x.classList.toggle("on",x===b));
- pending=[];render();
-});
-document.querySelectorAll("[data-l]").forEach(b=>b.onclick=()=>{len=+b.dataset.l;document.querySelectorAll("[data-l]").forEach(x=>x.classList.toggle("on",x===b));pending=[];render()});
-document.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{dir=b.dataset.d;document.querySelectorAll("[data-d]").forEach(x=>x.classList.toggle("on",x===b));pending=[];render()});
-document.querySelector("#clear").onclick=()=>{pending=[];render()};
-document.querySelector("#save").onclick=()=>{let v=document.querySelector("#variety").value.trim(),d=document.querySelector("#date").value;if(!v||!d||!pending.length){alert("Enter a variety and date, then select an area.");return}plantings.push({variety:v,date:d,cells:pending.map(x=>({...x}))});pending=[];saveLocal();render()};
-build();
+document.getElementById('save').onclick=()=>{
+ let cells=[...document.querySelectorAll('.cell.selected')].map(c=>c.dataset.key);
+ if(!cells.length){alert('Select an area first.');return}
+ let variety=document.getElementById('variety').value.trim(),date=document.getElementById('date').value;
+ if(!variety||!date){alert('Enter a variety and planting date.');return}
+ let data=JSON.parse(localStorage.getItem('jacksPlantingsStable')||'[]');
+ data.push({variety,date,cells,color:colourForVariety(variety,data)});
+ localStorage.setItem('jacksPlantingsStable',JSON.stringify(data));
+ document.getElementById('clear').click();renderSaved();
+};
+renderSaved();updateCount();updateHint();
 </script></body></html>

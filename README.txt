@@ -1,1 +1,1 @@
-Row-select prototype: choose 6/12/18/24/30/36 rows across, choose 1/6 to full length, then tap a tractor track to select. Individual 6-row-side x length sections can still be toggled for fine adjustment.
+Built from the earlier working Batch Select Prototype. The original batchSelect logic is unchanged. Fine Adjust is a separate ON/OFF mode; variety colours and planting dates are display-only additions.
