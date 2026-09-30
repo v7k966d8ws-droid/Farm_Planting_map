@@ -1,1 +1,2 @@
-Jacks Planting Map prototype. Upload index.html to a GitHub repository and enable GitHub Pages to use it interactively on iPad/Safari.
+Jacks Planting Map prototype - batch selection build.
+Upload index.html to the root of the Farm_Planting_map GitHub repository, replacing the existing index.html.
