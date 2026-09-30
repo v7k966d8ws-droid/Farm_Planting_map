@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Jacks Planting Map — Variety Colours</title>
+<title>Jacks Planting Map — Row Select</title>
 <style>
 :root{--bg:#eef3ef;--ink:#173226;--line:#c7d0ca;--track:#dccba8;--green:#287a50}
 *{box-sizing:border-box} body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
@@ -28,26 +28,28 @@ button{font-weight:700;color:#1677ff} button.on,.save{background:#287a50;color:w
 </style>
 </head>
 <body>
-<header><h1>Jacks Planting Map — Variety Colours</h1><div class="sub">One bay = 6 rows + tractor track + 6 rows. Three bays = normal 36-row planting width.</div></header>
+<header><h1>Jacks Planting Map — Row Select</h1><div class="sub">One bay = 6 rows + tractor track + 6 rows. Three bays = normal 36-row planting width.</div></header>
 <div class="controls">
 <input id="variety" placeholder="Variety" value="Gina">
 <input id="date" type="date">
 <button id="clear">Clear selection</button><button class="save" id="save">Save planting</button>
 </div>
 <div class="mode">
-<b>Width:</b><button data-w="1">12 rows</button><button data-w="3" class="on">36 rows</button>
+<b>Rows:</b>
+<button data-r="6">6</button><button data-r="12">12</button><button data-r="18">18</button>
+<button data-r="24">24</button><button data-r="30">30</button><button data-r="36" class="on">36</button>
 <b style="margin-left:8px">Length:</b>
 <button data-l="1">1/6</button><button data-l="2">1/3</button><button data-l="3" class="on">½</button><button data-l="4">2/3</button><button data-l="5">5/6</button><button data-l="6">Full</button>
 <b style="margin-left:8px">From:</b><button data-d="start" class="on">Top ↓</button><button data-d="end">Bottom ↑</button>
 </div>
-<div class="note">FAST SELECT: tap the tractor track to select the chosen 12/36-row batch. FINE ADJUST: each side of the tractor track is 6 rows; tap any 6-row × 1/6 section to add or remove it independently. Saved plantings are colour-coded by variety.</div>
+<div class="note">Choose the number of rows (6–36) and the planting length, then tap a tractor track at the starting position. Each side of a track represents 6 rows. You can still tap individual map sections afterwards to fine-adjust the selection. Saved plantings are colour-coded by variety.</div>
 <div class="legend" id="legend"></div>
 <div class="scroller"><div class="farm" id="farm"></div></div>
 <div class="status"><b id="sel">No area selected</b><div id="saved"></div></div>
 <script>
 const colours=["#b8dfc3","#f4d3a5","#bcd7f2","#e8b8cf","#d5c5ef","#f0e59e","#b9e2df","#efc0b4","#cbdca8","#d8c3ad"];
 const bayCounts=[14,6,6,6,4,5.5,6,6,6,2.5];
-let width=3,len=3,dir="start",pending=[],plantings=JSON.parse(localStorage.getItem("jacksPlantingsV4")||"[]");
+let rows=36,len=3,dir="start",pending=[],plantings=JSON.parse(localStorage.getItem("jacksPlantingsV5")||"[]");
 const today=new Date(); document.querySelector("#date").value=today.toISOString().slice(0,10);
 function varietyColour(v){
  let names=[...new Set(plantings.map(p=>p.variety))]; let i=names.indexOf(v);
@@ -79,15 +81,19 @@ function toggleSection(block,bay,seg,side){
  render();
 }
 
-function selectBatch(block,start){
+function selectBatch(block,startBay){
  pending=[]; const max=Math.ceil(bayCounts[block]);
- for(let b=start;b<Math.min(start+width,max);b++){
-   let segs=dir==="start"?[...Array(len).keys()]:[...Array(len).keys()].map(x=>5-x);
-   segs.forEach(s=>{
-     pending.push({block,bay:b,seg:s,side:"L"});
-     pending.push({block,bay:b,seg:s,side:"R"});
-   });
- } render();
+ const stripsNeeded=Math.max(1,Math.round(rows/6));
+ // Each bay has two 6-row strips: left and right of its tractor track.
+ // Tapping a tractor track starts at the LEFT 6-row strip of that bay.
+ let stripIndex=startBay*2;
+ let segs=dir==="start"?[...Array(len).keys()]:[...Array(len).keys()].map(x=>5-x);
+ for(let k=0;k<stripsNeeded;k++){
+   let idx=stripIndex+k, bay=Math.floor(idx/2), side=(idx%2===0?"L":"R");
+   if(bay>=max) break;
+   segs.forEach(seg=>pending.push({block,bay,seg,side}));
+ }
+ render();
 }
 function render(){
  document.querySelectorAll(".half").forEach(x=>{x.style.background="";x.innerHTML=""});
@@ -109,7 +115,7 @@ function render(){
      if(el){el.style.outline="3px solid #2683ff";el.style.outlineOffset="-3px";}
    });
  });
- document.querySelector("#sel").textContent=pending.length?`${pending.length} individual 6-row × 1/6 sections selected`:"No area selected";
+ document.querySelector("#sel").textContent=pending.length?`${rows} rows × ${len}/6 length selected`:"No area selected";
  renderLegend();renderSaved();
 }
 function fmt(d){if(!d)return"";let [y,m,day]=d.split("-");return `${day}/${m}/${y.slice(2)}`}
@@ -122,8 +128,12 @@ function renderSaved(){
  plantings.slice().reverse().forEach((p,ri)=>{let i=plantings.length-1-ri;let row=document.createElement("div");row.className="savedrow";row.innerHTML=`<span class="dot" style="background:${varietyColour(p.variety)}"></span><b>${p.variety}</b><span>${fmt(p.date)}</span><span class="small">${p.cells.length} map sections</span><button class="danger right" data-del="${i}">Delete</button>`;el.appendChild(row)});
  document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{plantings.splice(+b.dataset.del,1);saveLocal();render()});
 }
-function saveLocal(){localStorage.setItem("jacksPlantingsV4",JSON.stringify(plantings))}
-document.querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>{width=+b.dataset.w;document.querySelectorAll("[data-w]").forEach(x=>x.classList.toggle("on",x===b));pending=[];render()});
+function saveLocal(){localStorage.setItem("jacksPlantingsV5",JSON.stringify(plantings))}
+document.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{
+ rows=+b.dataset.r;
+ document.querySelectorAll("[data-r]").forEach(x=>x.classList.toggle("on",x===b));
+ pending=[];render();
+});
 document.querySelectorAll("[data-l]").forEach(b=>b.onclick=()=>{len=+b.dataset.l;document.querySelectorAll("[data-l]").forEach(x=>x.classList.toggle("on",x===b));pending=[];render()});
 document.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{dir=b.dataset.d;document.querySelectorAll("[data-d]").forEach(x=>x.classList.toggle("on",x===b));pending=[];render()});
 document.querySelector("#clear").onclick=()=>{pending=[];render()};

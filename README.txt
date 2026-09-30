@@ -1,1 +1,1 @@
-Fix: one bay = 6 rows + track + 6 rows = 12 rows. Three bays = 36 rows. Fine adjustment now works independently on each 6-row side and each 1/6 length section.
+Row-select prototype: choose 6/12/18/24/30/36 rows across, choose 1/6 to full length, then tap a tractor track to select. Individual 6-row-side x length sections can still be toggled for fine adjustment.
