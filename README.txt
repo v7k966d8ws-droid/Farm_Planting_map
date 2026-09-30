@@ -1,2 +1,2 @@
-Jacks Planting Map prototype - batch selection build.
-Upload index.html to the root of the Farm_Planting_map GitHub repository, replacing the existing index.html.
+Jacks planting map prototype — colour-coded varieties and planting dates.
+Replace the existing index.html in the Farm_Planting_map GitHub repository.
