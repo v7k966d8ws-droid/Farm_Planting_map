@@ -40,14 +40,14 @@ button{font-weight:700;color:#1677ff} button.on,.save{background:#287a50;color:w
 <button data-l="1">1/6</button><button data-l="2">1/3</button><button data-l="3" class="on">½</button><button data-l="4">2/3</button><button data-l="5">5/6</button><button data-l="6">Full</button>
 <b style="margin-left:8px">From:</b><button data-d="start" class="on">Top ↓</button><button data-d="end">Bottom ↑</button>
 </div>
-<div class="note">FAST SELECT: tap the tractor track in a bay to select the chosen 12/36-row batch. FINE ADJUST: tap any individual 1/6 section to add or remove just that part. Saved plantings are colour-coded by variety.</div>
+<div class="note">FAST SELECT: tap the tractor track to select the chosen 12/36-row batch. FINE ADJUST: each side of the tractor track is 6 rows; tap any 6-row × 1/6 section to add or remove it independently. Saved plantings are colour-coded by variety.</div>
 <div class="legend" id="legend"></div>
 <div class="scroller"><div class="farm" id="farm"></div></div>
 <div class="status"><b id="sel">No area selected</b><div id="saved"></div></div>
 <script>
 const colours=["#b8dfc3","#f4d3a5","#bcd7f2","#e8b8cf","#d5c5ef","#f0e59e","#b9e2df","#efc0b4","#cbdca8","#d8c3ad"];
 const bayCounts=[14,6,6,6,4,5.5,6,6,6,2.5];
-let width=3,len=3,dir="start",pending=[],plantings=JSON.parse(localStorage.getItem("jacksPlantingsV3")||"[]");
+let width=3,len=3,dir="start",pending=[],plantings=JSON.parse(localStorage.getItem("jacksPlantingsV4")||"[]");
 const today=new Date(); document.querySelector("#date").value=today.toISOString().slice(0,10);
 function varietyColour(v){
  let names=[...new Set(plantings.map(p=>p.variety))]; let i=names.indexOf(v);
@@ -62,9 +62,9 @@ function build(){
     const bay=document.createElement("div");bay.className="bay";bay.dataset.block=bi;bay.dataset.bay=j;
     for(let s=0;s<6;s++){
       let l=document.createElement("div");l.className="half";l.style.gridColumn="1";l.style.gridRow=(s+1);l.dataset.side="L";l.dataset.seg=s;
-      l.onclick=(e)=>{e.stopPropagation();toggleSection(bi,j,s);}; bay.appendChild(l);
+      l.onclick=(e)=>{e.stopPropagation();toggleSection(bi,j,s,"L");}; bay.appendChild(l);
       let r=document.createElement("div");r.className="half";r.style.gridColumn="3";r.style.gridRow=(s+1);r.dataset.side="R";r.dataset.seg=s;
-      r.onclick=(e)=>{e.stopPropagation();toggleSection(bi,j,s);}; bay.appendChild(r);
+      r.onclick=(e)=>{e.stopPropagation();toggleSection(bi,j,s,"R");}; bay.appendChild(r);
     }
     let tr=document.createElement("div");tr.className="track";bay.appendChild(tr);
     bay.onclick=()=>selectBatch(bi,j);bays.appendChild(bay);
@@ -72,10 +72,10 @@ function build(){
  }); render();
 }
 
-function toggleSection(block,bay,seg){
- const i=pending.findIndex(q=>q.block===block&&q.bay===bay&&q.seg===seg);
+function toggleSection(block,bay,seg,side){
+ const i=pending.findIndex(q=>q.block===block&&q.bay===bay&&q.seg===seg&&q.side===side);
  if(i>=0) pending.splice(i,1);
- else pending.push({block,bay,seg});
+ else pending.push({block,bay,seg,side});
  render();
 }
 
@@ -83,7 +83,10 @@ function selectBatch(block,start){
  pending=[]; const max=Math.ceil(bayCounts[block]);
  for(let b=start;b<Math.min(start+width,max);b++){
    let segs=dir==="start"?[...Array(len).keys()]:[...Array(len).keys()].map(x=>5-x);
-   segs.forEach(s=>pending.push({block,bay:b,seg:s}));
+   segs.forEach(s=>{
+     pending.push({block,bay:b,seg:s,side:"L"});
+     pending.push({block,bay:b,seg:s,side:"R"});
+   });
  } render();
 }
 function render(){
@@ -91,15 +94,22 @@ function render(){
  plantings.forEach(p=>{
    const c=varietyColour(p.variety);
    p.cells.forEach((q,idx)=>{
-    ["L","R"].forEach(side=>{
+    const sides=q.side?[q.side]:["L","R"];
+    sides.forEach(side=>{
       const el=document.querySelector(`.bay[data-block="${q.block}"][data-bay="${q.bay}"] .half[data-side="${side}"][data-seg="${q.seg}"]`);
-      if(el){el.style.background=c;if(idx===Math.floor(p.cells.length/2)&&side==="L")el.innerHTML=`<span class="seg">${p.variety}<br>${fmt(p.date)}</span>`;}
+      if(el){el.style.background=c;if(idx===Math.floor(p.cells.length/2))el.innerHTML=`<span class="seg">${p.variety}<br>${fmt(p.date)}</span>`;}
     });
    });
  });
- document.querySelectorAll(".bay").forEach(x=>x.classList.remove("pending"));
- [...new Set(pending.map(q=>q.block+"-"+q.bay))].forEach(k=>{let [a,b]=k.split("-");document.querySelector(`.bay[data-block="${a}"][data-bay="${b}"]`)?.classList.add("pending")});
- document.querySelector("#sel").textContent=pending.length?`${width*12} rows × ${len}/6 length selected`:"No area selected";
+ document.querySelectorAll(".half").forEach(x=>x.style.outline="");
+ pending.forEach(q=>{
+   const sides=q.side?[q.side]:["L","R"];
+   sides.forEach(side=>{
+     const el=document.querySelector(`.bay[data-block="${q.block}"][data-bay="${q.bay}"] .half[data-side="${side}"][data-seg="${q.seg}"]`);
+     if(el){el.style.outline="3px solid #2683ff";el.style.outlineOffset="-3px";}
+   });
+ });
+ document.querySelector("#sel").textContent=pending.length?`${pending.length} individual 6-row × 1/6 sections selected`:"No area selected";
  renderLegend();renderSaved();
 }
 function fmt(d){if(!d)return"";let [y,m,day]=d.split("-");return `${day}/${m}/${y.slice(2)}`}
@@ -112,7 +122,7 @@ function renderSaved(){
  plantings.slice().reverse().forEach((p,ri)=>{let i=plantings.length-1-ri;let row=document.createElement("div");row.className="savedrow";row.innerHTML=`<span class="dot" style="background:${varietyColour(p.variety)}"></span><b>${p.variety}</b><span>${fmt(p.date)}</span><span class="small">${p.cells.length} map sections</span><button class="danger right" data-del="${i}">Delete</button>`;el.appendChild(row)});
  document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{plantings.splice(+b.dataset.del,1);saveLocal();render()});
 }
-function saveLocal(){localStorage.setItem("jacksPlantingsV3",JSON.stringify(plantings))}
+function saveLocal(){localStorage.setItem("jacksPlantingsV4",JSON.stringify(plantings))}
 document.querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>{width=+b.dataset.w;document.querySelectorAll("[data-w]").forEach(x=>x.classList.toggle("on",x===b));pending=[];render()});
 document.querySelectorAll("[data-l]").forEach(b=>b.onclick=()=>{len=+b.dataset.l;document.querySelectorAll("[data-l]").forEach(x=>x.classList.toggle("on",x===b));pending=[];render()});
 document.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{dir=b.dataset.d;document.querySelectorAll("[data-d]").forEach(x=>x.classList.toggle("on",x===b));pending=[];render()});
