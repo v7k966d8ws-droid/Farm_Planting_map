@@ -40,7 +40,7 @@ button{font-weight:700;color:#1677ff} button.on,.save{background:#287a50;color:w
 <button data-l="1">1/6</button><button data-l="2">1/3</button><button data-l="3" class="on">½</button><button data-l="4">2/3</button><button data-l="5">5/6</button><button data-l="6">Full</button>
 <b style="margin-left:8px">From:</b><button data-d="start" class="on">Top ↓</button><button data-d="end">Bottom ↑</button>
 </div>
-<div class="note">Tap the first bay of the planting run. Saved plantings are colour-coded by variety; the variety and date are written on the planted area.</div>
+<div class="note">FAST SELECT: tap the tractor track in a bay to select the chosen 12/36-row batch. FINE ADJUST: tap any individual 1/6 section to add or remove just that part. Saved plantings are colour-coded by variety.</div>
 <div class="legend" id="legend"></div>
 <div class="scroller"><div class="farm" id="farm"></div></div>
 <div class="status"><b id="sel">No area selected</b><div id="saved"></div></div>
@@ -61,14 +61,24 @@ function build(){
    for(let j=0;j<count;j++){
     const bay=document.createElement("div");bay.className="bay";bay.dataset.block=bi;bay.dataset.bay=j;
     for(let s=0;s<6;s++){
-      let l=document.createElement("div");l.className="half";l.style.gridColumn="1";l.style.gridRow=(s+1);l.dataset.side="L";l.dataset.seg=s;bay.appendChild(l);
-      let r=document.createElement("div");r.className="half";r.style.gridColumn="3";r.style.gridRow=(s+1);r.dataset.side="R";r.dataset.seg=s;bay.appendChild(r);
+      let l=document.createElement("div");l.className="half";l.style.gridColumn="1";l.style.gridRow=(s+1);l.dataset.side="L";l.dataset.seg=s;
+      l.onclick=(e)=>{e.stopPropagation();toggleSection(bi,j,s);}; bay.appendChild(l);
+      let r=document.createElement("div");r.className="half";r.style.gridColumn="3";r.style.gridRow=(s+1);r.dataset.side="R";r.dataset.seg=s;
+      r.onclick=(e)=>{e.stopPropagation();toggleSection(bi,j,s);}; bay.appendChild(r);
     }
     let tr=document.createElement("div");tr.className="track";bay.appendChild(tr);
     bay.onclick=()=>selectBatch(bi,j);bays.appendChild(bay);
    } farm.appendChild(b);
  }); render();
 }
+
+function toggleSection(block,bay,seg){
+ const i=pending.findIndex(q=>q.block===block&&q.bay===bay&&q.seg===seg);
+ if(i>=0) pending.splice(i,1);
+ else pending.push({block,bay,seg});
+ render();
+}
+
 function selectBatch(block,start){
  pending=[]; const max=Math.ceil(bayCounts[block]);
  for(let b=start;b<Math.min(start+width,max);b++){

@@ -1,2 +1,2 @@
-Jacks planting map prototype — colour-coded varieties and planting dates.
-Replace the existing index.html in the Farm_Planting_map GitHub repository.
+Jacks planting map — batch selection plus individual 1/6 fine adjustment.
+Replace index.html in the Farm_Planting_map GitHub repository.
